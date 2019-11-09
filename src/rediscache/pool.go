@@ -1,15 +1,18 @@
 package rediscache
 
 import (
+	"time"
+
 	"github.com/gomodule/redigo/redis"
 )
 
 func NewPool() *redis.Pool {
 
 	return &redis.Pool{ // Maximum number of idle connections in the pool.
-		MaxIdle: 80,
+		MaxIdle: 10000,
 		// max number of connections
-		MaxActive: 12000,
+		MaxActive:   12000,
+		IdleTimeout: 240 * time.Second,
 		// Dial is an application supplied function for creating and
 		// configuring a connection.
 		Dial: func() (redis.Conn, error) {

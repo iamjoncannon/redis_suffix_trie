@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"suffixtrie"
 )
 
@@ -8,11 +9,8 @@ func main() {
 
 	thisTrie := suffixtrie.NewTrie()
 
-	// thisTrie.HydrateRedisCache()
-	thisTrie.InsertIntoTrie("Aphex Twin- XTal 290134- genre- ambient", "Aphex")
-	thisTrie.InsertIntoTrie("The Taurii have weapons of the ancients", "SG1")
+	thisTrie.InsertIntoTrie("the rain in spain falls mainly in the plains", "123")
+	thisTrie.InsertIntoTrie("the rain in spain falls mainly in the plains", "456")
 
-	// thisTrie.PrintTrie("AphexTrie")
-
-	// thisTrie.LoadTrie("AphexTrie.json")
+	fmt.Println((*thisTrie)["a"])
 }
