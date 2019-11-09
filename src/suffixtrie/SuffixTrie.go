@@ -3,6 +3,9 @@ package suffixtrie
 import (
 	"encoding/json"
 	"io/ioutil"
+	"rediscache"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // this is the second version-- same api, but uses a
@@ -71,19 +74,50 @@ func (t *Trie) InsertIntoTrie(item string, payload string) {
 			}
 		}
 	}
-}
 
-// RedisConnection represents the connection as
-// an interface, so it can be mocked in testing
-type RedisConnection interface {
-	GetCache()
-	SetCache()
 }
 
 // InsertIntoTrieRedis inserts items into Redis trie rather than
 // application memory
-func (t *Trie) InsertIntoTrieRedis(item string, payload string, c RedisConnection) {
+func (t *Trie) InsertIntoTrieRedis(item string, payload string, conn redis.Conn) {
 
+	for i := 0; i < len(item); i++ {
+
+		for j := i + 1; j < len(item)+1; j++ {
+
+			chunk := string(item[i:j])
+
+			// query Redis for this key
+			thisEntry, ok := rediscache.GetCache(conn, chunk)
+
+			/*
+				if ok != true {
+
+					(*t)[chunk] = []string{payload}
+
+				} else {
+
+					var isAlreadyInPayload bool
+
+					isAlreadyInPayload = false
+
+					for _, currentPayload := range thisEntry {
+
+						if currentPayload == payload {
+
+							isAlreadyInPayload = true
+						}
+					}
+
+					if isAlreadyInPayload == false {
+
+						(*t)[chunk] = append(thisEntry, payload)
+					}
+				}
+
+			*/
+		}
+	}
 }
 
 // Contains returns currently stored value, or <NOT FOUND>

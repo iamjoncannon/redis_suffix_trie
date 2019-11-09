@@ -116,4 +116,28 @@ func TestContains(t *testing.T) {
 
 func TestInsertIntoRedisTrie(t *testing.T) {
 
+	/*
+		TODO- insert a mock into this function
+		instead of testing a connection to a real Redis instance
+
+		e.g. https://github.com/alicebob/miniredis
+
+		I couldn't figure out how to do this in a type safe way-
+		in a dynamically typed language you could just have the
+		function switch out the real and mocked connection, but
+		golang requires the types to be identical-- and you can't
+		simply use interface{} as a placeholder between the mock
+		and actual client
+	*/
+
+	pool := rediscache.NewPool()
+	conn := pool.Get()
+	defer conn.Close()
+
+	// we expect it to behave exactly like the in application
+	// function above, but using get and set to redis connection
+	// using lists
+
+	
+
 }

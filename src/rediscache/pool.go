@@ -6,6 +6,18 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+/*
+
+code to instantiate pool:
+
+pool := rediscache.NewPool()
+conn := pool.Get()
+defer conn.Close()
+
+conn is the connection object
+
+*/
+
 func NewPool() *redis.Pool {
 
 	return &redis.Pool{ // Maximum number of idle connections in the pool.

@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"rediscache"
 	"suffixtrie"
 )
 
 func main() {
 
+	pool := rediscache.NewPool()
+	conn := pool.Get()
+	defer conn.Close()
+
 	thisTrie := suffixtrie.NewTrie()
 
-	thisTrie.InsertIntoTrie("the rain in spain falls mainly in the plains", "123")
-	thisTrie.InsertIntoTrie("the rain in spain falls mainly in the plains", "456")
-
-	fmt.Println((*thisTrie)["a"])
 }
