@@ -4,9 +4,11 @@
 
 https://en.wikipedia.org/wiki/Suffix_tree
 
-This package implements the trie data structure in Redis by storing each suffix as the key to a list, containing all values/payloads inserted for that suffix. Unlike some tries, its a "shallow" hash- only one dimension, since Redis doesn't natively support nested data structures. 
+This package implements the trie data structure in Redis by storing each suffix as the key to a list, containing all values/payloads inserted for that suffix. Unlike some tries, its a "shallow" hash- one dimension, as Redis doesn't natively support nested data structures. 
 
 Potential uses cases-- indexing a series of files for quick searching, indexing occurences of terms in a text. The API could also be modified easily to support counting occurances. 
+
+This would not be a good solution for uses cases that involved very long inserted terms (i.e. genetic sequences), since the space complexity of the keys themselves is quadratic versus linear with nested keys (each key stores all chars that precede it in the graph).
 
 # API
 
@@ -27,8 +29,7 @@ func main() {
     thisTrie.InsertIntoTrieRedis("super", "But then one day I learned a word.", conn)
     thisTrie.InsertIntoTrieRedis("califrag", "The biggest word you ever heard. And this is how it goes", conn)
 
-    // Query the cache for any string inserted into the trie, and receive the payload
-    // stored at each inserted string  
+    // Query the cache for any substring inserted into the trie, and receive its payload 
     thisTrie.ContainsRedis("docious", conn)  // ["you'll always sound precocious"]
     thisTrie.ContainsRedis("super", conn) // ["you'll always sound precocious", "But then one day I learned a word."]
     thisTrie.ContainsRedis("califrag", conn) // ["you'll always sound precocious", "The biggest word you ever heard. And this is how it goes"]
