@@ -1,8 +1,8 @@
-t:
+test:
 	go test ./src/suffixtrie
 
-gr:
+run:
 	go run main.go
 
-bld:
+build:
 	go build -o suffix
