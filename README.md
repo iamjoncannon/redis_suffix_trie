@@ -31,7 +31,7 @@ func main() {
     // stored at each inserted string  
     thisTrie.ContainsRedis("docious", conn)  // ["you'll always sound precocious"]
     thisTrie.ContainsRedis("super", conn) // ["you'll always sound precocious", "But then one day I learned a word."]
-    thisTrie.ContainsRedis("califrag", conn) // ["you'll always sound precocious", "a third payload"]
+    thisTrie.ContainsRedis("califrag", conn) // ["you'll always sound precocious", "The biggest word you ever heard. And this is how it goes"]
     thisTrie.ContainsRedis("Merry Poppins", conn)  // <NOT FOUND>
 }
 ```
