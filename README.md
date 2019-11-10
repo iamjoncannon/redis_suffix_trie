@@ -29,10 +29,10 @@ func main() {
 
     // Query the cache for any string inserted into the trie, and receive the payload
     // stored at each inserted string  
-    queryOne := thisTrie.ContainsRedis("docious", conn)  // ["you'll always sound precocious"]
-    queryOne := thisTrie.ContainsRedis("super", conn) // ["you'll always sound precocious", "But then one day I learned a word."]
-    queryOne := thisTrie.ContainsRedis("califrag", conn) // ["you'll always sound precocious", "a third payload"]
-    outputTwo := thisTrie.ContainsRedis("Merry Poppins", conn)  // <NOT FOUND>
+    thisTrie.ContainsRedis("docious", conn)  // ["you'll always sound precocious"]
+    thisTrie.ContainsRedis("super", conn) // ["you'll always sound precocious", "But then one day I learned a word."]
+    thisTrie.ContainsRedis("califrag", conn) // ["you'll always sound precocious", "a third payload"]
+    thisTrie.ContainsRedis("Merry Poppins", conn)  // <NOT FOUND>
 }
 ```
 
