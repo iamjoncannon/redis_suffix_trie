@@ -13,4 +13,6 @@ func main() {
 
 	thisTrie := suffixtrie.NewTrie()
 
+	thisTrie.InsertIntoTrieRedis("The rain in spain falls mainly in the plain", "payloadd", conn)
+
 }

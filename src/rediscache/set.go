@@ -1,14 +1,21 @@
 package rediscache
 
 import (
+	"fmt"
+
 	"github.com/gomodule/redigo/redis"
 )
 
-func SetCache(c redis.Conn, key string, value string) {
+// RPUSH a 'thang dose'
 
-	_, err := c.Do("hset", "trie", key, value)
+// SetCache sets a list item with rpush
+func SetCache(c redis.Conn, key string, value string) error {
+
+	_, err := c.Do("RPUSH", key, value)
 
 	if err != nil {
-		panic(err)
+		fmt.Println("rpush error", err)
 	}
+
+	return err
 }

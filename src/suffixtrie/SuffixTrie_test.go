@@ -1,6 +1,8 @@
 package suffixtrie
 
 import (
+	"fmt"
+	"rediscache"
 	"reflect"
 	"testing"
 )
@@ -135,9 +137,172 @@ func TestInsertIntoRedisTrie(t *testing.T) {
 	defer conn.Close()
 
 	// we expect it to behave exactly like the in application
-	// function above, but using get and set to redis connection
-	// using lists
+	// function above, but using get and set to redis connection,
+	// which stores each trie key as a Redis list type
 
-	
+	// test one
 
+	firstTrie := NewTrie()
+
+	firstTrie.InsertIntoTrieRedis("a", "123", conn)
+
+	testOne, err := rediscache.GetCache(conn, "a")
+
+	if err != nil {
+
+		fmt.Println("GetCache error:", err)
+	}
+
+	if testOne.([]string)[0] != "123" {
+
+		t.Errorf("the trie would store one char as a key")
+	}
+
+	//### flush
+
+	flushed, err := conn.Do("flushall")
+
+	if err != nil {
+
+		fmt.Println(flushed, err)
+	}
+
+	// test two
+
+	secondTrie := NewTrie()
+
+	secondTrie.InsertIntoTrieRedis("ab", "123", conn)
+
+	twoQueryOne, _ := rediscache.GetCache(conn, "a")
+	twoQueryTwo, _ := rediscache.GetCache(conn, "b")
+	twoQueryThree, _ := rediscache.GetCache(conn, "ab")
+
+	twoTest1 := twoQueryOne.([]string)[0] == "123"
+	twoTest2 := twoQueryTwo.([]string)[0] == "123"
+	twoTest3 := twoQueryThree.([]string)[0] == "123"
+
+	if (twoTest1 && twoTest2 && twoTest3) != true {
+
+		t.Errorf("given a two char key, it would store separate")
+		t.Errorf("keys for each char, and one key for both chars")
+	}
+
+	//### flush
+
+	flushed, err = conn.Do("flushall")
+
+	if err != nil {
+
+		fmt.Println(flushed, err)
+	}
+
+	// test three
+
+	thirdTrie := NewTrie()
+
+	thirdTrie.InsertIntoTrieRedis("cd", "123", conn)
+	thirdTrie.InsertIntoTrieRedis("cd", "456", conn)
+
+	threeQueryOne, _ := rediscache.GetCache(conn, "c")
+
+	if len(threeQueryOne.([]string)) != 2 {
+
+		t.Errorf("given two entries same key with two different payloads")
+		t.Errorf("stores both payloads in []string, in the order of insertion")
+	}
+
+	testThreeExpectOne := threeQueryOne.([]string)[0] == "123"
+	testThreeExpectTwo := threeQueryOne.([]string)[1] == "456"
+
+	if (testThreeExpectOne && testThreeExpectTwo) != true {
+
+		fmt.Println(testThreeExpectOne, testThreeExpectTwo)
+		t.Errorf("given two entries with same key and two different payloads")
+		t.Errorf("stores both payloads on []string")
+	}
+
+	//### flush
+
+	flushed, err = conn.Do("flushall")
+
+	if err != nil {
+
+		fmt.Println(flushed, err)
+	}
+
+	// test four
+
+	fourthTrie := NewTrie()
+
+	fourthTrie.InsertIntoTrieRedis("aaa", "123", conn)
+
+	fourQueryOne, _ := rediscache.GetCache(conn, "a")
+
+	if len(fourQueryOne.([]string)) != 1 {
+
+		fmt.Println(fourQueryOne, len(fourQueryOne.([]string)))
+		t.Errorf("if payload already exists in key, doesn't append again")
+	}
+
+	//### flush
+
+	flushed, err = conn.Do("flushall")
+
+	if err != nil {
+
+		fmt.Println(flushed, err)
+	}
+}
+
+func TestContainsRedis(t *testing.T) {
+
+	pool := rediscache.NewPool()
+	conn := pool.Get()
+	defer conn.Close()
+
+	firstTrie := NewTrie()
+
+	firstTrie.InsertIntoTrieRedis("ab", "123", conn)
+
+	testOne := firstTrie.ContainsRedis("a", conn)
+
+	if reflect.TypeOf(testOne).String() != "[]string" {
+
+		t.Errorf("given an existing key, trie.Contains returns the associated value as []string")
+	}
+
+	if testOne[0] != "123" {
+
+		t.Errorf("given an existing key, trie.Contains returns the associated value as []string")
+	}
+
+	testTwo := firstTrie.ContainsRedis("b", conn)
+
+	if testTwo[0] != "123" {
+
+		t.Errorf("given an existing key, trie.ContainsRedis ret, connurns the associated value as []string")
+	}
+
+	testThree := firstTrie.ContainsRedis("ab", conn)
+
+	if testThree[0] != "123" {
+
+		t.Errorf("given an existing key, trie.ContainsRedis ret, connurns the associated value as []string")
+	}
+
+	testFour := firstTrie.ContainsRedis("c", conn)
+
+	if testFour[0] != "<NOT FOUND>" {
+
+		t.Errorf("given a non-existent key, ContainsRedis ret, connurns '<NOT FOUND>'")
+	}
+
+	//### flush
+
+	flushed, err := conn.Do("flushall")
+
+	if err != nil {
+
+		fmt.Println(flushed, err)
+	}
 }

@@ -2,6 +2,7 @@ package suffixtrie
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"rediscache"
 
@@ -45,13 +46,13 @@ func (t *Trie) InsertIntoTrie(item string, payload string) {
 
 		for j := i + 1; j < len(item)+1; j++ {
 
-			chunk := string(item[i:j])
+			thisKey := string(item[i:j])
 
-			thisEntry, ok := (*t)[chunk]
+			thisEntry, ok := (*t)[thisKey]
 
 			if ok != true {
 
-				(*t)[chunk] = []string{payload}
+				(*t)[thisKey] = []string{payload}
 
 			} else {
 
@@ -69,7 +70,7 @@ func (t *Trie) InsertIntoTrie(item string, payload string) {
 
 				if isAlreadyInPayload == false {
 
-					(*t)[chunk] = append(thisEntry, payload)
+					(*t)[thisKey] = append(thisEntry, payload)
 				}
 			}
 		}
@@ -85,37 +86,51 @@ func (t *Trie) InsertIntoTrieRedis(item string, payload string, conn redis.Conn)
 
 		for j := i + 1; j < len(item)+1; j++ {
 
-			chunk := string(item[i:j])
+			thisKey := string(item[i:j])
 
 			// query Redis for this key
-			thisEntry, ok := rediscache.GetCache(conn, chunk)
+			thisEntry, err := rediscache.GetCache(conn, thisKey)
 
-			/*
-				if ok != true {
+			if err != nil {
 
-					(*t)[chunk] = []string{payload}
+				fmt.Println(err)
+			}
 
-				} else {
+			// first entry
+			if len(thisEntry.([]string)) == 0 {
 
-					var isAlreadyInPayload bool
+				err := rediscache.SetCache(conn, thisKey, payload)
 
-					isAlreadyInPayload = false
+				if err != nil {
 
-					for _, currentPayload := range thisEntry {
+					fmt.Println(err)
+				}
 
-						if currentPayload == payload {
+			} else { // subsequent entries
 
-							isAlreadyInPayload = true
-						}
-					}
+				var isAlreadyInPayload bool
 
-					if isAlreadyInPayload == false {
+				isAlreadyInPayload = false
 
-						(*t)[chunk] = append(thisEntry, payload)
+				for _, currentPayload := range thisEntry.([]string) {
+
+					if currentPayload == payload {
+
+						isAlreadyInPayload = true
 					}
 				}
 
-			*/
+				if isAlreadyInPayload == false {
+
+					// Redis operation appends to current list
+					err := rediscache.SetCache(conn, thisKey, payload)
+
+					if err != nil {
+
+						fmt.Println(err)
+					}
+				}
+			}
 		}
 	}
 }
@@ -132,4 +147,23 @@ func (t *Trie) Contains(item string) []string {
 	}
 
 	return thisAttempt
+}
+
+// ContainsRedis returns currently stored value from cache
+// , or <NOT FOUND> as []string
+func (t *Trie) ContainsRedis(key string, conn redis.Conn) []string {
+
+	thisEntry, err := rediscache.GetCache(conn, key)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
+	if len(thisEntry.([]string)) == 0 {
+
+		return []string{"<NOT FOUND>"}
+	}
+
+	return thisEntry.([]string)
 }
