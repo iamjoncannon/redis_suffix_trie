@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"rediscache"
 	"suffixtrie"
 )
@@ -14,11 +13,13 @@ func main() {
 
 	thisTrie := suffixtrie.NewTrie()
 
-	thisTrie.InsertIntoTrieRedis("The rain in spain falls mainly in the plain", "payloadd", conn)
-	thisTrie.InsertIntoTrieRedis("The rain in spain falls mainly in the plain", "another payloaaddd", conn)
+	thisTrie.InsertIntoTrieRedis("The rain in spain falls mainly in the plain", "payload", conn)
+	thisTrie.InsertIntoTrieRedis("spain", "another payload", conn)
+	thisTrie.InsertIntoTrieRedis("plain", "a third payload", conn)
 
-	output := thisTrie.ContainsRedis("a", conn)
-
-	fmt.Println(output)
+	queryOne := thisTrie.ContainsRedis("rain", conn)  // ["payload"]
+	queryOne := thisTrie.ContainsRedis("spain", conn) // ["payload", "another payload"]
+	queryOne := thisTrie.ContainsRedis("plain", conn) // ["payload", "a third payload"]
+	outputTwo := thisTrie.ContainsRedis("zoo", conn)  // <NOT FOUND>
 
 }
